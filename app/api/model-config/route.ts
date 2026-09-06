@@ -1,0 +1,7 @@
+import { NextResponse } from "next/server";
+import { clearModelConfig, getModelConfig, saveModelConfig } from "@/lib/model-config";
+import { logger, requestId } from "@/lib/logger";
+
+export async function GET() { const config = await getModelConfig(); return NextResponse.json({ baseUrl: config.baseUrl, model: config.model, configured: Boolean(config.apiKey), apiKeyMasked: config.apiKey ? `${config.apiKey.slice(0, 4)}••••${config.apiKey.slice(-4)}` : "" }); }
+export async function PUT(request: Request) { const body = await request.json(); const current = await getModelConfig(); const baseUrl = String(body.baseUrl || "").trim().replace(/\/$/, ""); const model = String(body.model || "gpt-4o-mini").trim(); const apiKey = body.apiKey === "" || body.apiKey == null ? current.apiKey : String(body.apiKey).trim(); if (!baseUrl || !model) return NextResponse.json({ error: "Base URL 和模型名不能为空" }, { status: 400 }); const saved = await saveModelConfig({ baseUrl, apiKey, model }); await logger.info("model.configured", { requestId: requestId(), baseUrl, model, configured: Boolean(apiKey) }); return NextResponse.json({ baseUrl: saved.baseUrl, model: saved.model, configured: Boolean(saved.apiKey), apiKeyMasked: saved.apiKey ? `${saved.apiKey.slice(0, 4)}••••${saved.apiKey.slice(-4)}` : "" }); }
+export async function DELETE() { await clearModelConfig(); await logger.info("model.config.cleared", { requestId: requestId() }); return new Response(null, { status: 204 }); }
