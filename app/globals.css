@@ -15,7 +15,7 @@ aside>button{width:100%;margin-bottom:18px;background:#2563eb;border-color:#2563
 .item button{border:0;background:transparent;padding:0 4px}.item button:hover{color:#dc2626}
 .chat-panel{display:grid;grid-template-rows:auto minmax(0,1fr) auto;min-width:0;min-height:0;height:100dvh;overflow:hidden;background:#f6f8fb}
 .chat-panel>header{padding:20px;border-bottom:1px solid #e5e7eb;background:#fff;font-weight:600}
-.messages{min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:28px}
+.messages{min-height:0;overflow-y:auto;overscroll-behavior:contain;scroll-padding-bottom:42px;padding:28px 28px 42px}
 .message{max-width:760px;margin:0 auto 24px;line-height:1.6}.message.user{background:#eaf2ff;padding:14px 18px;border-radius:12px}
 .role{font-size:12px;color:#94a3b8;margin-bottom:5px}.empty{color:#94a3b8;text-align:center;margin-top:25vh}
 .chat-footer{min-width:0;background:#fff;border-top:1px solid #e5e7eb}.composer{padding:12px 18px 18px}.composer-model{font-size:12px;color:#64748b;margin-bottom:8px}.composer-row{display:flex;gap:10px}
