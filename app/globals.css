@@ -17,6 +17,7 @@ aside>button{width:100%;margin-bottom:18px;background:#2563eb;border-color:#2563
 .chat-panel>header{padding:20px;border-bottom:1px solid #e5e7eb;background:#fff;font-weight:600}
 .messages{min-height:0;overflow-y:auto;overscroll-behavior:contain;scroll-padding-bottom:42px;padding:28px 28px 42px}
 .message{max-width:760px;margin:0 auto 24px;line-height:1.6}.message.user{background:#eaf2ff;padding:14px 18px;border-radius:12px}
+.thinking{margin:0 0 12px;border:1px solid #e5e7eb;border-radius:8px;background:#f8fafc;color:#64748b;font-size:13px}.thinking summary{padding:8px 10px;cursor:pointer;user-select:none}.thinking-content{padding:0 12px 10px;border-top:1px solid #e5e7eb;white-space:pre-wrap}
 .role{font-size:12px;color:#94a3b8;margin-bottom:5px}.empty{color:#94a3b8;text-align:center;margin-top:25vh}
 .chat-footer{min-width:0;background:#fff;border-top:1px solid #e5e7eb}.composer{padding:12px 18px 18px}.composer-model{font-size:12px;color:#64748b;margin-bottom:8px}.composer-row{display:flex;gap:10px}
 .composer textarea{flex:1;min-width:0;resize:none;min-height:48px;background:#fff;border:1px solid #dbe2ea;color:#1f2937;border-radius:8px;padding:13px;font:inherit}.composer button{align-self:end;background:#2563eb;border-color:#2563eb;color:#fff}.error{color:#dc2626;padding:0 20px 10px;text-align:center}
