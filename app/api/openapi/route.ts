@@ -18,6 +18,11 @@ const spec = {
       parameters: [{ $ref: "#/components/parameters/ConversationId" }],
       post: { summary: "发送消息并流式获取 Agent 回复", requestBody: { required: true, content: { "application/json": { schema: { type: "object", required: ["content"], properties: { content: { type: "string", example: "帮我总结这段内容" } } } } } }, responses: { "200": { description: "SSE 事件流", content: { "text/event-stream": { schema: { type: "string", example: "event: token\\ndata: {\\\"token\\\":\\\"你好\\\"}\\n\\n" } } } }, "400": { description: "内容不能为空" }, "404": { description: "会话不存在" } } },
       delete: { summary: "停止当前运行", responses: { "204": { description: "停止请求已处理" } } }
+    },
+    "/api/model-config": {
+      get: { summary: "获取模型配置（API Key 脱敏）", responses: { "200": { description: "当前模型配置" } } },
+      put: { summary: "保存模型配置", requestBody: { required: true, content: { "application/json": { schema: { type: "object", required: ["baseUrl", "model"], properties: { baseUrl: { type: "string", example: "https://api.openai.com/v1" }, apiKey: { type: "string", example: "sk-..." }, model: { type: "string", example: "gpt-4o-mini" } } } } } }, responses: { "200": { description: "保存后的脱敏配置" }, "400": { description: "配置无效" } } },
+      delete: { summary: "清除模型配置", responses: { "204": { description: "清除成功" } } }
     }
   },
   components: {
