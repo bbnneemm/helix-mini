@@ -16,7 +16,7 @@ const spec = {
     },
     "/api/conversations/{id}/messages": {
       parameters: [{ $ref: "#/components/parameters/ConversationId" }],
-      post: { summary: "发送消息并流式获取 Agent 回复", requestBody: { required: true, content: { "application/json": { schema: { type: "object", required: ["content"], properties: { content: { type: "string", example: "帮我总结这段内容" } } } } } }, responses: { "200": { description: "SSE 事件流", content: { "text/event-stream": { schema: { type: "string", example: "event: token\\ndata: {\\\"token\\\":\\\"你好\\\"}\\n\\n" } } } }, "400": { description: "内容不能为空" }, "404": { description: "会话不存在" } } },
+      post: { summary: "发送消息并流式获取 Agent 回复", requestBody: { required: true, content: { "application/json": { schema: { type: "object", required: ["content"], properties: { content: { type: "string", example: "帮我总结这段内容" } } } } } }, responses: { "200": { description: "SSE 事件流，事件名遵循统一模型输出协议：start、thinking_start/delta/end、text_start/delta/end、done、error", content: { "text/event-stream": { schema: { type: "string", example: "event: text_delta\\ndata: {\\\"type\\\":\\\"text_delta\\\",\\\"outputIndex\\\":0,\\\"delta\\\":\\\"你好\\\"}\\n\\n" } } } }, "400": { description: "内容不能为空" }, "404": { description: "会话不存在" } } },
       delete: { summary: "停止当前运行", responses: { "204": { description: "停止请求已处理" } } }
     },
     "/api/model-config": {
