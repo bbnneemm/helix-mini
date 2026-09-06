@@ -3,11 +3,28 @@ import { getModelConfig } from "./model-config";
 
 type StreamCallbacks = { onToken: (token: string) => void; onThinking?: (token: string) => void };
 
+function emitReasoningItem(item: unknown, callbacks: StreamCallbacks, state: { emitted: boolean }) {
+  if (!item || typeof item !== "object") return;
+  const value = item as { type?: string; summary?: Array<{ type?: string; text?: string }> };
+  if (value.type !== "reasoning" || !Array.isArray(value.summary) || state.emitted) return;
+  for (const part of value.summary) if (part.type === "summary_text" && part.text) { callbacks.onThinking?.(part.text); state.emitted = true; }
+}
+
+function handleResponseEvent(data: Record<string, unknown>, callbacks: StreamCallbacks, state: { emitted: boolean }) {
+  const type = String(data.type || "");
+  if (type === "response.reasoning_summary_text.delta" || type === "response.reasoning_text.delta") { const delta = typeof data.delta === "string" ? data.delta : ""; if (delta) { callbacks.onThinking?.(delta); state.emitted = true; } return; }
+  if (type === "response.reasoning_summary_text.done" || type === "response.reasoning_text.done") { if (!state.emitted && typeof data.text === "string" && data.text) { callbacks.onThinking?.(data.text); state.emitted = true; } return; }
+  if (type === "response.output_text.delta") { if (typeof data.delta === "string" && data.delta) callbacks.onToken(data.delta); return; }
+  if (type === "response.output_item.done") { emitReasoningItem(data.item, callbacks, state); return; }
+  if (type === "response.failed" || type === "response.incomplete") { const response = data.response as { error?: { message?: string } | string } | undefined; const error = typeof response?.error === "string" ? response.error : response?.error?.message; throw new Error(error || `模型响应状态：${type}`); }
+  if (type === "response.completed") { const response = data.response as { output?: unknown[] } | undefined; for (const item of response?.output || []) emitReasoningItem(item, callbacks, state); }
+}
+
 async function streamResponses(base: string, key: string, model: string, messages: Message[], signal: AbortSignal, callbacks: StreamCallbacks) {
   const response = await fetch(`${base.replace(/\/$/, "")}/responses`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` }, body: JSON.stringify({ model, stream: true, input: messages.map(m => ({ role: m.role, content: m.content })), reasoning: { effort: "high", summary: "auto" } }), signal });
   if (!response.ok || !response.body) { if ([400, 404, 405, 422].includes(response.status)) return false; throw new Error(`模型请求失败（${response.status}）`); }
-  const reader = response.body.getReader(); const decoder = new TextDecoder(); let buffer = "";
-  while (true) { const { value, done } = await reader.read(); if (done) break; buffer += decoder.decode(value, { stream: true }); const events = buffer.split(/\r?\n\r?\n/); buffer = events.pop() || ""; for (const event of events) { const dataLine = event.split(/\r?\n/).find(line => line.startsWith("data: ")); if (!dataLine || dataLine.includes("[DONE]")) continue; try { const data = JSON.parse(dataLine.slice(6)); const delta = data.delta || data.text || ""; if (data.type === "response.reasoning_summary_text.delta") callbacks.onThinking?.(delta); else if (data.type === "response.output_text.delta") callbacks.onToken(delta); } catch {} } }
+  const reader = response.body.getReader(); const decoder = new TextDecoder(); let buffer = ""; const state = { emitted: false };
+  while (true) { const { value, done } = await reader.read(); if (done) break; buffer += decoder.decode(value, { stream: true }); const events = buffer.split(/\r?\n\r?\n/); buffer = events.pop() || ""; for (const event of events) { const dataLine = event.split(/\r?\n/).find(line => line.startsWith("data: ")); if (!dataLine || dataLine.includes("[DONE]")) continue; try { handleResponseEvent(JSON.parse(dataLine.slice(6)) as Record<string, unknown>, callbacks, state); } catch (error) { if (error instanceof Error && !error.message.startsWith("Unexpected")) throw error; } } }
   return true;
 }
 
